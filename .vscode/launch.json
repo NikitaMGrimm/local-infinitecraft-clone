@@ -1,0 +1,33 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'my_program'",
+            "cargo": {
+                "args": [
+                    "run", "--"
+                ],
+                "filter": {
+                    "name": "my_program",
+                    "kind": "bin"
+                }
+            },
+            "args": ["${input:arg1}", "${input:arg2}"],
+            "cwd": "${workspaceFolder}/local-infinitecraft-clone"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "arg1",
+            "type": "promptString",
+            "description": "Enter the first argument."
+        },
+        {
+            "id": "arg2",
+            "type": "promptString",
+            "description": "Enter the second argument."
+        }
+    ]
+}
