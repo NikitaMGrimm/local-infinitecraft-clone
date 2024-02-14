@@ -26,3 +26,18 @@ impl ModelTrait for Model {
     Ok(first_line.to_string())
     }
 }
+
+pub struct FakeTestModel {}
+
+impl ModelTrait for FakeTestModel {
+    fn new<P: AsRef<Path>>(_model_path: P) -> Self {
+        FakeTestModel {}
+    }
+    fn query(&self, input1: &str, input2: &str) -> Result<String, Error> {
+        let output = format!("{}{}", input1, input2);
+        let mut chars: Vec<char> = output.chars().collect();
+        chars.sort();
+        let output: String = chars.into_iter().collect();
+        Ok(output)
+    }
+}
