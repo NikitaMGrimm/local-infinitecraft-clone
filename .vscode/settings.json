@@ -1,5 +1,5 @@
 {
     "rust-analyzer.linkedProjects": [
-        "./local-infinitecraft-clone/Cargo.toml"
+        "./Cargo.toml"
     ]
 }

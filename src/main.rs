@@ -4,13 +4,11 @@ use crate::model::{FakeTestModel, Model, ModelTrait};
 pub mod model;
 
 fn main() {
+    let args: Vec<String> = env::args().collect();
     let llm_bin = Path::new("/home/nikita/.local/bin/mistral");
     
-    let ingredient1 = "ace";
-    let ingredient2 = "elf";
-
     let model = FakeTestModel::new(llm_bin);
 
-    let output = model.query(ingredient1, ingredient2).unwrap();
+    let output = model.query(&args[1], &args[2]).unwrap();
     println!("{}", output);
 }
