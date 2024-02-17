@@ -1,31 +1,33 @@
 use std::{io::Error, path::{Path, PathBuf}, process::Command, rc::Rc};
-use crate::savefile::{Combination, SaveFile, Word};
+use crate::savefile::{self, Combination, SaveFile, Word};
 
 pub struct Model {
     model_path: PathBuf,
-    save_file: SaveFile,
+    pub save_file: SaveFile,
 }
 
 pub trait ModelTrait {
-    fn new<P: AsRef<Path>>(model_path: P) -> Self;
+    fn new(model_path: PathBuf, save_file: SaveFile) -> Self;
     fn query(&self, input1: &str, input2: &str) -> Result<Word, Error>;
-    fn combine_into_result(&self, combination: &Combination, save_file: &SaveFile) -> Word {
+    fn query_savefile(&self, combination: &Combination) -> Option<&Word>;
+    fn combine_into_result(&self, combination: &Combination) -> Word {
         let first_word = &combination.0;
         let second_word = &combination.1;
-        match save_file.recipe_result(combination) {
+        match self.query_savefile(combination) {
             Some(recipe) => recipe.clone(),
             None => {
-                self.query(&first_word, &second_word).unwrap()
+                let result = self.query(&first_word, &second_word).unwrap();
+                result
             },
         }
     }
 }
 
 impl ModelTrait for Model {
-    fn new<P: AsRef<Path>>(model_path: P) -> Self {
+    fn new(model_path: PathBuf, save_file: SaveFile) -> Self {
         Model {
-            model_path: model_path.as_ref().to_path_buf(),
-            save_file: SaveFile::new(),
+            model_path,
+            save_file,
         }
     }
     fn query(&self, input1: &str, input2: &str) -> Result<Word, Error> {
@@ -36,7 +38,10 @@ impl ModelTrait for Model {
         
     let stdout = String::from_utf8_lossy(&output.stdout);
     let first_line = stdout.lines().next().unwrap_or("");
-    Ok(Rc::from(first_line.to_string()))
+    Ok(Rc::from(first_line))
+    }
+    fn query_savefile(&self, combination: &Combination) -> Option<&Word> {
+        self.save_file.recipe_result(combination)
     }
 }
 
@@ -45,9 +50,9 @@ pub struct FakeTestModel {
 }
 
 impl ModelTrait for FakeTestModel {
-    fn new<P: AsRef<Path>>(_model_path: P) -> Self {
+    fn new(_model_path: PathBuf, save_file: SaveFile) -> Self {
         FakeTestModel {
-            save_file: SaveFile::new(),
+            save_file,
         }
     }
     fn query(&self, input1: &str, input2: &str) -> Result<Word, Error> {
@@ -56,5 +61,8 @@ impl ModelTrait for FakeTestModel {
         chars.sort();
         let output: String = chars.into_iter().collect();
         Ok(Rc::from(output))
+    }
+    fn query_savefile(&self, combination: &Combination) -> Option<&Word> {
+        self.save_file.recipe_result(combination)
     }
 }

@@ -1,6 +1,10 @@
 use std::collections::{HashSet, HashMap};
+use std::fs::File;
+use std::io::{BufReader, BufWriter, Write};
+use std::path::PathBuf;
 use std::rc::Rc;
 
+use bincode::serialize_into;
 use serde::{Deserialize, Serialize};
 
 pub type Word = Rc<str>; // maybe Box<> if I dont need clone
@@ -32,5 +36,17 @@ impl SaveFile {
     }
     pub fn recipe_result(&self, combination: &Combination) -> Option<&Word> {
         self.recipes.get(combination)
+    }
+    pub fn save_to_file(&self, save_file_path: PathBuf) {
+        let encoded = bincode::serialize(&self).unwrap();
+        let file = File::create(save_file_path).unwrap();
+        let writer = BufWriter::new(file);
+        serialize_into(writer, &encoded).unwrap();
+    }
+    pub fn load_from_file(save_file_path: PathBuf) -> Self {
+        let file = File::open(save_file_path).unwrap();
+        let reader = BufReader::new(file);
+        let decoded: SaveFile = bincode::deserialize_from(reader).unwrap();
+        decoded
     }
 }
